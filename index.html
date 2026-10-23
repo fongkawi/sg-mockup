@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="HEALL demo: ESG console with Environment, Social and Governance pages (sample data)">
+<title>HEALL S&amp;G Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&family=Noto+Sans:wght@400;500;600&display=swap">
+<style>
+html{color-scheme:light}
+body{margin:0}
+/* Layout: existing HEALL console (sidebar + top bar + working view). E is unchanged; S and G reuse the same page pattern. */
+:root{
+  --bg:#F2F6F4; --surface:#FFFFFF; --soft:#F5F8F7; --line:#E2E8E5; --line-strong:#C8D2CE;
+  --fg:#1B2623; --muted:#56635E; --brand:#2F6B5C; --brand-soft:#E0EFE9; --on-brand:#FFFFFF;
+  --energy:#9A6A12; --energy-soft:#FBF1DE; --water:#3B68AD; --water-soft:#E7EEF9; --waste:#7350C2; --waste-soft:#F0EBFB; --goods:#3D8A78; --goods-soft:#E2F2EE;
+  --sc2:#3F7A6C; --sc3:#7DB8A4; --grid:#E6ECE9;
+  --s:#2D5F9E; --s-soft:#E6EEF8; --g:#5A4AA6; --g-soft:#EEEBFA;
+  --ok:#22603F; --ok-bg:#E2F2EA; --bad:#A3362B; --bad-bg:#FBE8E5; --warn:#764C00; --warn-bg:#FCF0D6;
+  --font:"Noto Sans Thai","Noto Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111715; --surface:#19211F; --soft:#1F2926; --line:#2B3632; --line-strong:#3D4A45;
+  --fg:#E6EEEA; --muted:#A2B0AA; --brand:#5FB89F; --brand-soft:#1F3A33; --on-brand:#0E1A16;
+  --energy:#E5B45A; --energy-soft:#33280F; --water:#88AEE8; --water-soft:#1C2A3E; --waste:#B59BF0; --waste-soft:#2A2340; --goods:#7FCDB8; --goods-soft:#183029;
+  --sc2:#4FB596; --sc3:#9FDCC7; --grid:#2A3531;
+  --s:#86AEE6; --s-soft:#1E2B3D; --g:#A99CEB; --g-soft:#2A2545;
+  --ok:#8FD3AE; --ok-bg:#1C3328; --bad:#F2A296; --bad-bg:#3A221F; --warn:#F0C66E; --warn-bg:#3A2E16; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --surface:#19211F; --soft:#1F2926; --line:#2B3632; --line-strong:#3D4A45;
+  --fg:#E6EEEA; --muted:#A2B0AA; --brand:#5FB89F; --brand-soft:#1F3A33; --on-brand:#0E1A16;
+  --energy:#E5B45A; --energy-soft:#33280F; --water:#88AEE8; --water-soft:#1C2A3E; --waste:#B59BF0; --waste-soft:#2A2340; --goods:#7FCDB8; --goods-soft:#183029;
+  --sc2:#4FB596; --sc3:#9FDCC7; --grid:#2A3531;
+  --s:#86AEE6; --s-soft:#1E2B3D; --g:#A99CEB; --g-soft:#2A2545;
+  --ok:#8FD3AE; --ok-bg:#1C3328; --bad:#F2A296; --bad-bg:#3A221F; --warn:#F0C66E; --warn-bg:#3A2E16; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55}
+button{font-family:inherit}
+.shell{display:flex;min-height:100vh}
+nav.side{width:236px;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 10px 16px;font-weight:600}
+.logo b{width:30px;height:30px;border-radius:8px;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;flex:none}
+nav.side button{all:unset;cursor:pointer;padding:9px 12px;border-radius:10px;color:var(--muted);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+nav.side button:hover{background:var(--soft);color:var(--fg)}
+nav.side button[aria-current="page"]{background:var(--brand-soft);color:var(--brand);font-weight:500}
+nav.side .bottom{margin-top:auto;border-top:1px solid var(--line);padding-top:10px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+header.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+header.bar h1{font-size:22px;font-weight:600;margin:0}
+.bar-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+main{padding-block:20px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1140px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h2{font-size:17px;font-weight:600;margin:0}
+h3{font-size:15px;font-weight:600;margin:0}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.row-between{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.tag{font-size:12px;padding:3px 10px;border-radius:8px;background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.new{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--s-soft);color:var(--s);font-weight:500;white-space:nowrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.lbl{font-size:13px;color:var(--muted)}
+.big{font-size:30px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
+.big small{font-size:15px;font-weight:400;color:var(--muted)}
+.mid{font-size:24px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums}
+.mid small{font-size:13px;font-weight:400;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;white-space:nowrap;line-height:1.6;font-variant-numeric:tabular-nums}
+.ok{background:var(--ok-bg);color:var(--ok)} .bad{background:var(--bad-bg);color:var(--bad)} .warn{background:var(--warn-bg);color:var(--warn)} .neu{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.btn{all:unset;cursor:pointer;padding:8px 14px;border-radius:9px;background:var(--brand);color:var(--on-brand);font-size:14px;font-weight:500;text-align:center;white-space:nowrap}
+.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line-strong)}
+.link{all:unset;cursor:pointer;color:var(--brand);font-size:14px;font-weight:500}
+.pillars{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;align-self:flex-start}
+.pillars button{all:unset;cursor:pointer;padding:7px 16px;border-radius:9px;color:var(--muted);font-size:15px;display:flex;gap:6px;align-items:center}
+.pillars button[aria-selected="true"]{color:var(--on-brand);font-weight:500}
+.pillars button[data-p="E"][aria-selected="true"]{background:var(--brand)}
+.pillars button[data-p="S"][aria-selected="true"]{background:var(--s)}
+.pillars button[data-p="G"][aria-selected="true"]{background:var(--g)}
+.pillars button[aria-selected="true"] .new{background:var(--surface);color:var(--fg)}
+.summary{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.summary .card{flex:1 1 520px;min-width:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.summary .card > div{flex:1 1 360px;min-width:0}
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tab{all:unset;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center}
+.tab[aria-selected="true"]{border-color:var(--brand);box-shadow:inset 0 -3px 0 var(--brand)}
+.tab.s[aria-selected="true"]{border-color:var(--s);box-shadow:inset 0 -3px 0 var(--s)}
+.tab.g[aria-selected="true"]{border-color:var(--g);box-shadow:inset 0 -3px 0 var(--g)}
+.ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none}
+.ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab b{display:block;font-size:15px;font-weight:600}
+.tab .lbl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
+.segm{display:flex;flex-wrap:wrap;gap:2px;border:1px solid var(--line);border-radius:10px;padding:3px}
+.segm span{padding:5px 11px;border-radius:7px;font-size:14px;color:var(--muted)}
+.segm span.on{background:var(--surface);color:var(--fg);font-weight:500;box-shadow:0 0 0 1px var(--line-strong)}
+.fbtn{padding:7px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;color:var(--fg);background:var(--surface)}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:12px;font-family:var(--font)}
+.scope{display:flex;flex-direction:column;gap:4px}
+.track{height:8px;border-radius:5px;background:var(--grid);overflow:hidden}
+.track i{display:block;height:8px;border-radius:5px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.res{border-top:3px solid var(--c);border-radius:14px}
+.res .head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.res .name{display:flex;gap:8px;align-items:center;font-weight:600}
+.res .ico{width:30px;height:30px;border-radius:8px}
+.res .ico svg{width:16px;height:16px}
+.scopetag{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--goods);color:var(--goods)}
+.res hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.list-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;background:var(--soft);margin-top:8px}
+.list-row > div{min-width:0}
+.hbar{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(60px,1fr) auto auto;gap:10px;align-items:center;font-size:14px;padding:6px 0}
+.metric{all:unset;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.metric:hover{border-color:var(--line-strong)}
+.metric[aria-pressed="true"]{border-color:var(--s);box-shadow:0 0 0 1px var(--s)}
+.metric.gm[aria-pressed="true"]{border-color:var(--g);box-shadow:0 0 0 1px var(--g)}
+.metric.missing{border-style:dashed;background:var(--soft)}
+.src{font-size:12px;color:var(--muted)}
+.detail{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 26px;font-size:14px;margin-top:12px}
+.kv span{display:block;color:var(--muted);font-size:13px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--muted);text-align:left;padding:8px}
+td{padding:9px 8px;border-top:1px solid var(--line)}
+.n{text-align:right}
+.row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row > div:first-child{min-width:0;flex:1 1 240px}
+.note{font-size:13px;color:var(--muted)}
+.sect{display:flex;flex-direction:column;gap:12px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:28px clamp(18px,4vw,40px);border-top:10px solid var(--brand)}
+.doc p{margin:0 0 12px;max-width:68ch}
+.doc .num{all:unset;cursor:pointer;font-weight:600;border-bottom:1px dashed var(--s)}
+.doc .num[aria-pressed="true"]{background:var(--s-soft)}
+.doc .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));border:1px solid var(--brand);margin:14px 0}
+.doc .kpis div{padding:10px 12px;border-right:1px solid var(--line)}
+.rep{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.rep > .left{flex:1 1 220px;min-width:0}
+.rep > .mid{flex:3 1 460px;min-width:0}
+.rep > aside{flex:1.4 1 260px;min-width:0;position:sticky;top:16px}
+.chap{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:6px;align-items:center;padding:10px 12px;border-radius:10px;font-size:14px}
+.chap[aria-current="true"]{background:var(--brand-soft);color:var(--brand);font-weight:500}
+.radio{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px}
+.radio:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.drop{display:block;border:1.5px dashed var(--line-strong);border-radius:12px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-size:14px;position:relative}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:var(--soft);padding:2px 6px;border-radius:6px;word-break:break-word}
+.portal{max-width:980px}
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.qa .card{display:flex;gap:14px;align-items:center}
+.qa .ico{background:var(--brand-soft);color:var(--brand)}
+.helper{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 16px 6px 6px;font-size:13px;z-index:5}
+.helper i{width:38px;height:38px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-style:normal;font-weight:600}
+.pico{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;flex:none}
+.pico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pico.sm{width:22px;height:22px;border-radius:6px}.pico.sm svg{width:13px;height:13px}
+.pico.lg{width:42px;height:42px;border-radius:12px}.pico.lg svg{width:22px;height:22px}
+.pE{background:var(--brand-soft);color:var(--brand)}.pS{background:var(--s-soft);color:var(--s)}.pG{background:var(--g-soft);color:var(--g)}.pA{background:var(--soft);color:var(--fg);border:1px solid var(--line)}
+.pillars button[aria-selected="true"] .pico{background:var(--surface)}
+.ph{display:flex;gap:10px;align-items:center;min-width:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.pcard{border-top:3px solid var(--c)}
+.pbody{display:flex;gap:16px;align-items:center;margin-top:12px}
+.spark{display:block;width:100%;height:auto;margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.stats div{min-width:0}.stats b{display:block;font-size:14px;font-variant-numeric:tabular-nums}
+.segbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;margin-top:10px}
+.segbar i{display:block;height:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{all:unset;cursor:pointer;display:flex;gap:6px;align-items:center;padding:4px 12px 4px 5px;border-radius:999px;border:1px solid var(--line);font-size:14px}
+.chips button[aria-pressed="true"]{border-color:var(--fg);font-weight:500;background:var(--soft)}
+.mring{display:flex;gap:12px;align-items:center}
+.esg3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0}
+.esg3 > div{border:1px solid var(--line);border-radius:12px;padding:14px;border-top:3px solid var(--c)}
+.esg3 ul{margin:10px 0 0;padding-left:18px;font-size:14px}
+@media (max-width:820px){
+  .shell{flex-direction:column}
+  nav.side{width:auto;flex-direction:row;overflow-x:auto;padding:8px max(12px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line)}
+  .logo span,nav.side .bottom{display:none}
+  .logo{padding:2px 8px 2px 0}
+  nav.side button{white-space:nowrap}
+  .rep > aside{position:static}
+  .helper span{display:none}
+  .helper{padding:6px}
+}
+@media (prefers-reduced-motion:no-preference){.metric,.tab,.radio{transition:border-color .15s,box-shadow .15s}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<nav class="side" aria-label="เมนูหลัก">
+  <div class="logo"><b>H</b><span>HEALLCARE Hospital</span></div>
+  <button data-view="home">หน้าแรก</button>
+  <button data-view="dashboard">แดชบอร์ด</button>
+  <button data-view="stub">บันทึกข้อมูล</button>
+  <button data-view="stub">ตรวจจับความผิดปกติ</button>
+  <button data-view="stub">อัปเดต</button>
+  <button data-view="stub">เป้าหมาย KPI</button>
+  <button data-view="portal">งาน</button>
+  <button data-view="report">รายงาน</button>
+  <button data-view="stub">ผู้ช่วย AI</button>
+  <button data-view="sources">แหล่งข้อมูล</button>
+  <button data-view="stub">ตั้งค่า</button>
+  <div class="bottom"><button data-view="portal">ไปที่ Staff Portal</button></div>
+</nav>
+
+<div class="content">
+<header class="bar">
+  <h1 id="page-title">แดชบอร์ด</h1>
+  <div class="bar-r"><span class="tag">ข้อมูลตัวอย่าง</span><span class="tag">TH</span><span class="tag">system@heall-th.com</span></div>
+</header>
+<main>
+
+<!-- ===== HOME ===== -->
+<section id="v-home" hidden><div class="wrap">
+  <div class="row-between">
+    <div><div class="lbl">30 มิ.ย. 2569</div><h2 style="font-size:24px">สวัสดี คุณ System</h2><p class="sub">ข้อมูลถึง 30 มิ.ย. 2569 · อัปเดต 20 ต.ค. 2569 14:20</p></div>
+    <div class="bar-r"><button class="btn">เพิ่มข้อมูล</button><button class="btn ghost">ปรับแต่งหน้าแรก</button></div>
+  </div>
+  <div class="row-between"><div class="ph"><span data-pico="A"></span><h2>ภาพรวม ESG</h2></div><span class="note">ครึ่งปีแรก 2569 · เทียบช่วงก่อนหน้า</span></div>
+  <div class="pgrid" id="home-pillars"></div>
+  <div class="pgrid">
+    <div class="card">
+      <div class="row-between"><div class="ph"><span data-pico="E" data-cls="sm"></span><h3>อาคารที่ใช้พลังงานสูงสุด</h3></div><span class="note">47 ไซต์</span></div>
+      <div style="margin-top:8px">
+        <div class="hbar"><span>อาคารนวมินทราบพิตร 84 พรรษา</span><span class="track"><i style="width:100%;background:var(--energy)"></i></span><b>13.3M</b><span class="note">kWh</span></div>
+        <div class="hbar"><span>อาคารศรีสวรินทิรา</span><span class="track"><i style="width:67%;background:var(--energy)"></i></span><b>8.9M</b><span class="note">kWh</span></div>
+        <div class="hbar"><span>อาคารสยามินทร์</span><span class="track"><i style="width:50%;background:var(--energy)"></i></span><b>6.7M</b><span class="note">kWh</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row-between"><div class="ph"><span data-pico="S" data-cls="sm"></span><h3>หน่วยที่พยาบาลลาออกสูง</h3></div><button class="link" data-go="dashboard" data-pillar="S">เปิด →</button></div>
+      <div style="margin-top:8px">
+        <div class="hbar"><span>ICU</span><span class="track"><i style="width:100%;background:var(--s)"></i></span><b>18.0%</b><span class="note">ต่อปี</span></div>
+        <div class="hbar"><span>ห้องฉุกเฉิน</span><span class="track"><i style="width:82%;background:var(--s)"></i></span><b>14.7%</b><span class="note">ต่อปี</span></div>
+        <div class="hbar"><span>ห้องผ่าตัด</span><span class="track"><i style="width:68%;background:var(--s)"></i></span><b>12.3%</b><span class="note">ต่อปี</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row-between"><div class="ph"><span data-pico="G" data-cls="sm"></span><h3>เอกสารและใบรับรอง</h3></div><button class="link" data-go="dashboard" data-pillar="G">เปิด →</button></div>
+      <div class="list-row"><div><b>การรับรอง HA</b><div class="note">หมดอายุ 31 มี.ค. 2570</div></div><span class="pill warn">เหลือ 5 เดือน</span></div>
+      <div class="list-row"><div><b>นโยบายต่อต้านคอร์รัปชัน</b><div class="note">ยังไม่แนบฉบับลงนาม</div></div><span class="pill bad">ยังขาด</span></div>
+      <div class="list-row"><div><b>ผลประเมินความเสี่ยงด้าน ESG</b><div class="note">ยังไม่ได้มอบหมาย</div></div><span class="pill bad">ยังขาด</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row-between"><h3>งานของฉัน</h3><button class="link" data-go="portal">ดูทั้งหมด →</button></div>
+    <div id="home-tasks" style="margin-top:4px"></div>
+  </div>
+</div></section>
+
+<!-- ===== DASHBOARD ===== -->
+<section id="v-dashboard" hidden><div class="wrap">
+  <div class="pillars" role="tablist" aria-label="มิติ ESG">
+    <button role="tab" data-p="E">สิ่งแวดล้อม</button>
+    <button role="tab" data-p="S">สังคม <span class="new">ใหม่</span></button>
+    <button role="tab" data-p="G">ธรรมาภิบาล <span class="new">ใหม่</span></button>
+  </div>
+
+  <!-- E: unchanged from current product -->
+  <div id="p-E" class="sect" hidden>
+    <div class="summary">
+      <div class="card"><div><div style="font-weight:600;font-size:14px">สรุปจากน้องฮีลใจ <span class="note" style="font-weight:400">· อัปเดต 15:07</span></div><p style="margin:4px 0 0">การปล่อยคาร์บอนรวม 16,192.5 tCO₂e ลดลง 44% มี 40 จุดวัดที่ยังไม่มีข้อมูลที่อนุมัติ และผลลัพธ์รวมข้อมูลจำลองบางส่วน</p></div><button class="btn ghost">สรุปตอนนี้</button></div>
+      <div class="bar-r"><button class="btn ghost">นำเสนอ</button><button class="btn">แชร์ลิงก์</button></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="หมวดสิ่งแวดล้อม">
+      <button class="tab" aria-selected="true"><span class="ico" style="background:var(--brand-soft);color:var(--brand)"><svg viewBox="0 0 24 24"><path d="M5 19c8 0 14-6 14-14C11 5 5 11 5 19z"/><path d="M5 19l7-7"/></svg></span><span><b>ภาพรวม</b><span class="lbl">16.2K tCO₂e <span class="pill ok">↓ 44%</span></span></span></button>
+      <button class="tab"><span class="ico" style="background:var(--energy-soft);color:var(--energy)"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></span><span><b>พลังงาน</b><span class="lbl">27.3M kWh <span class="pill ok">↓ 41.9%</span></span></span></button>
+      <button class="tab"><span class="ico" style="background:var(--water-soft);color:var(--water)"><svg viewBox="0 0 24 24"><path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/></svg></span><span><b>น้ำ</b><span class="lbl">211.7K m³ <span class="pill neu">+0.1%</span></span></span></button>
+      <button class="tab"><span class="ico" style="background:var(--waste-soft);color:var(--waste)"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span><span><b>ขยะ</b><span class="lbl">470.8K kg <span class="pill ok">↓ 74.2%</span></span></span></button>
+    </div>
+    <div class="filters">
+      <div class="segm"><span>เดือน</span><span>ไตรมาส</span><span class="on">6 เดือน</span><span>ปี</span><span>กำหนดเอง</span></div>
+      <span class="fbtn">1 ม.ค. 2569 – 30 มิ.ย. 2569</span><span class="fbtn">ทุกไซต์ ▾</span><span class="fbtn">เทียบช่วงก่อนหน้า ▾</span><span class="fbtn" style="margin-left:auto">ตัวกรองเพิ่มเติม</span>
+    </div>
+    <div class="card">
+      <h3>การปล่อยคาร์บอน <span class="note" style="font-weight:400">ทุกทรัพยากรและสินค้าที่ซื้อ</span></h3>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:10px">
+        <div style="flex:1 1 360px;min-width:0" class="sect">
+          <div><div class="big">16.2K <small>tCO₂e</small></div><span class="pill ok">↓ 44%</span> <span class="note">−12.7K tCO₂e เทียบ 1 ก.ค. – 31 ธ.ค. 2568</span></div>
+          <div class="scope"><div class="row-between"><span><b>Scope 1</b><br><span class="note">การเผาไหม้เชื้อเพลิงในพื้นที่</span></span><span>0 tCO₂e · 0% <span class="pill ok">↓ 100%</span></span></div><div class="track"><i style="width:0"></i></div></div>
+          <div class="scope"><div class="row-between"><span><b>Scope 2</b><br><span class="note">ไฟฟ้าที่ซื้อจากระบบ</span></span><span>13.6K tCO₂e · 84.2% <span class="pill ok">↓ 41.7%</span></span></div><div class="track"><i style="width:84.2%;background:var(--sc2)"></i></div></div>
+          <div class="scope"><div class="row-between"><span><b>Scope 3</b><br><span class="note">น้ำประปา ขยะ สินค้าที่ซื้อ และพลังงานต้นน้ำ</span></span><span>2.6K tCO₂e · 15.8% <span class="pill ok">↓ 51.5%</span></span></div><div class="track"><i style="width:15.8%;background:var(--sc3)"></i></div></div>
+        </div>
+        <div style="flex:1.2 1 380px;min-width:0"><svg class="chart" id="chart-e" role="img" aria-label="การปล่อยคาร์บอนรายเดือน ม.ค. ถึง มิ.ย. 2569 แยก Scope 2 และ Scope 3"></svg>
+          <div class="note" style="display:flex;gap:14px;flex-wrap:wrap"><span><span style="display:inline-block;width:10px;height:10px;background:var(--sc2);border-radius:2px"></span> Scope 2</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--sc3);border-radius:2px"></span> Scope 3</span><span>- - - เทียบ 1 ก.ค. – 31 ธ.ค. 2568</span></div></div>
+      </div>
+    </div>
+    <div class="grid4">
+      <div class="card res" style="--c:var(--energy)"><div class="head"><span class="name"><span class="ico" style="background:var(--energy-soft);color:var(--energy)"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></span>พลังงาน</span><span class="scopetag">Scope 2 + 3</span></div><div class="big" style="margin-top:8px">27.3M <small>kWh</small></div><span class="pill ok">↓ 41.9%</span> <span class="note">เทียบ ก.ค.–ธ.ค. 2568</span><hr><div>15.9K tCO₂e <span class="pill ok">↓ 42.2%</span></div><div class="note">97.9% ของทั้งหมด</div></div>
+      <div class="card res" style="--c:var(--water)"><div class="head"><span class="name"><span class="ico" style="background:var(--water-soft);color:var(--water)"><svg viewBox="0 0 24 24"><path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/></svg></span>น้ำ</span><span class="scopetag">Scope 3</span></div><div class="big" style="margin-top:8px">211.7K <small>m³</small></div><span class="pill neu">+0.1%</span> <span class="note">เทียบ ก.ค.–ธ.ค. 2568</span><hr><div>114.5 tCO₂e <span class="pill neu">+0.1%</span></div><div class="note">0.7% ของทั้งหมด</div></div>
+      <div class="card res" style="--c:var(--waste)"><div class="head"><span class="name"><span class="ico" style="background:var(--waste-soft);color:var(--waste)"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span>ขยะ</span><span class="scopetag">Scope 3</span></div><div class="big" style="margin-top:8px">470.8K <small>kg</small></div><span class="pill ok">↓ 74.2%</span> <span class="note">เทียบ ก.ค.–ธ.ค. 2568</span><hr><div>181.7 tCO₂e <span class="pill ok">↓ 78.8%</span></div><div class="note">1.1% ของทั้งหมด</div></div>
+      <div class="card res" style="--c:var(--goods)"><div class="head"><span class="name"><span class="ico" style="background:var(--goods-soft);color:var(--goods)"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg></span>สินค้าที่ซื้อ</span><span class="scopetag">Scope 3</span></div><div class="big" style="margin-top:8px">41.7 <small>tCO₂e</small></div><span class="pill ok">↓ 91.5%</span> <span class="note">เทียบ ก.ค.–ธ.ค. 2568</span><hr><div class="note">คาร์บอนจากการจัดซื้อ · 0.3% ของทั้งหมด</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <h3>รายละเอียด Scope 3 <span class="note" style="font-weight:400">2.6K tCO₂e</span></h3>
+        <div style="margin-top:8px">
+          <div class="hbar"><span>Cat 3 · กิจกรรมที่เกี่ยวกับเชื้อเพลิงและพลังงาน</span><span class="track"><i style="width:100%;background:var(--goods)"></i></span><b>2.2K</b><span class="pill ok">↓ 41.7%</span></div>
+          <div class="hbar"><span>Cat 5 · ของเสียจากการดำเนินงาน</span><span class="track"><i style="width:8%;background:var(--goods)"></i></span><b>181.7</b><span class="pill ok">↓ 78.8%</span></div>
+          <div class="hbar"><span>Cat 1 · สินค้าและบริการที่ซื้อ (น้ำ)</span><span class="track"><i style="width:5%;background:var(--goods)"></i></span><b>114.5</b><span class="pill neu">+0.1%</span></div>
+          <div class="hbar"><span>Cat 1 · สินค้าและบริการที่ซื้อ</span><span class="track"><i style="width:2%;background:var(--goods)"></i></span><b>25.6</b><span class="pill ok">↓ 67.4%</span></div>
+          <div class="hbar"><span>Cat 2 · สินทรัพย์ลงทุน</span><span class="track"><i style="width:1%;background:var(--goods)"></i></span><b>16.1</b><span class="pill ok">↓ 96.1%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>ต้องติดตาม <span class="note" style="font-weight:400">เทียบ 1 ก.ค. – 31 ธ.ค. 2568</span></h3>
+        <div class="list-row"><div><b>ตึกจุลชีววิทยา</b><div class="note">พลังงานเพิ่มขึ้น +54.5% · +100.4K kWh</div></div><span>›</span></div>
+        <div class="list-row"><div><b>ตึกอายุรกรรม</b><div class="note">น้ำเพิ่มขึ้น +2.4% · +126.4 m³</div></div><span>›</span></div>
+        <div class="list-row"><div><b>40 จุดวัด</b><div class="note">พลังงาน · ยังไม่มีข้อมูลที่อนุมัติ</div></div><span>›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S -->
+  <div id="p-S" class="sect" hidden>
+    <div class="summary">
+      <div class="card"><div><div style="font-weight:600;font-size:14px">สรุปจากน้องฮีลใจ <span class="note" style="font-weight:400">· อัปเดต 1 ก.ค. 2569</span></div><p style="margin:4px 0 0">ครึ่งปีแรกมีพนักงานลาออก 220 คน อัตราลาออกต่อปีลดลงเหลือ 9.2% แต่ ICU ยังสูงถึง 18% เหตุเข็มทิ่มตำเพิ่มขึ้น 2 ครั้ง ส่วนใหญ่ที่ห้องฉุกเฉิน และยังขาดผลสำรวจความพึงพอใจผู้ป่วย</p></div><button class="btn ghost">สรุปตอนนี้</button></div>
+      <div class="bar-r"><button class="btn ghost">นำเสนอ</button><button class="btn">แชร์ลิงก์</button></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="หมวดสังคม" id="s-tabs"></div>
+    <div class="filters">
+      <div class="segm"><span>เดือน</span><span>ไตรมาส</span><span class="on">6 เดือน</span><span>ปี</span><span>กำหนดเอง</span></div>
+      <span class="fbtn">1 ม.ค. 2569 – 30 มิ.ย. 2569</span><span class="fbtn">ทุกแผนก ▾</span><span class="fbtn">ทุกกลุ่มบุคลากร ▾</span><span class="fbtn">เทียบช่วงก่อนหน้า ▾</span>
+      <span class="note" style="margin-left:auto">อัปเดตเดือนละครั้ง · ยอดรวมรายแผนก ไม่มีข้อมูลรายบุคคล</span>
+    </div>
+    <div id="s-body" class="sect"></div>
+  </div>
+
+  <!-- G -->
+  <div id="p-G" class="sect" hidden>
+    <div class="summary">
+      <div class="card"><div><div style="font-weight:600;font-size:14px">สรุปจากน้องฮีลใจ <span class="note" style="font-weight:400">· อัปเดต 5 ต.ค. 2569</span></div><p style="margin:4px 0 0">พร้อมรายงาน 12 จาก 14 หัวข้อ ยังขาดนโยบายต่อต้านคอร์รัปชันฉบับลงนาม และผลประเมินความเสี่ยงด้าน ESG ใบรับรอง HA จะหมดอายุใน 5 เดือน</p></div><button class="btn ghost">สรุปตอนนี้</button></div>
+      <div class="bar-r"><button class="btn ghost">นำเสนอ</button><button class="btn">แชร์ลิงก์</button></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="หมวดธรรมาภิบาล" id="g-tabs"></div>
+    <div class="filters">
+      <div class="segm"><span class="on">ปี</span><span>กำหนดเอง</span></div>
+      <span class="fbtn">รอบปี 2569 ▾</span><span class="fbtn">เทียบปีก่อน ▾</span>
+      <span class="note" style="margin-left:auto">สรุปปีละครั้ง · ใช้ชุดเดียวกับหมวดการกำกับดูแลกิจการใน 56-1</span>
+    </div>
+    <div id="g-body" class="sect"></div>
+  </div>
+</div></section>
+
+<!-- ===== SOURCES ===== -->
+<section id="v-sources" hidden><div class="wrap">
+  <div><h2 style="font-size:22px">แหล่งข้อมูล</h2><p class="sub">แยกตามมิติ E S G · ตั้งค่าครั้งเดียว ข้อมูลเข้ามาเองทุกเดือน</p></div>
+  <div id="src-pillars" class="sect"></div>
+  <div class="two">
+  <div class="card">
+    <div class="ph"><span data-pico="S" data-cls="sm"></span><h3>ตั้งนิยามด้านสังคมให้ตรงกับโรงพยาบาล</h3></div>
+    <p class="sub" style="margin-top:4px">ตอบครั้งเดียว ตัวเลขทุกเดือนจะคิดแบบเดียวกัน</p>
+    <fieldset style="border:0;padding:0;margin:14px 0 0"><legend style="font-size:14px;font-weight:500;margin-bottom:8px">นับลูกจ้างสัญญาจ้างรายวันในอัตราลาออกไหม</legend>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"><label class="radio"><input type="radio" name="q1" id="q1a">นับด้วย</label><label class="radio"><input type="radio" name="q1" id="q1b" checked>ไม่นับ</label></div></fieldset>
+    <fieldset style="border:0;padding:0;margin:14px 0 0"><legend style="font-size:14px;font-weight:500;margin-bottom:8px">กลุ่ม "พยาบาล" รวมใครบ้าง</legend>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"><label class="radio"><input type="radio" name="q2" id="q2a" checked>วิชาชีพ + เทคนิค</label><label class="radio"><input type="radio" name="q2" id="q2b">วิชาชีพเท่านั้น</label></div></fieldset>
+    <fieldset style="border:0;padding:0;margin:14px 0 0"><legend style="font-size:14px;font-weight:500;margin-bottom:8px">อุบัติเหตุจากงานนับตั้งแต่หยุดงานกี่วัน</legend>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"><label class="radio"><input type="radio" name="q3" id="q3a" checked>ตั้งแต่ 1 วัน</label><label class="radio"><input type="radio" name="q3" id="q3b">มากกว่า 3 วัน</label></div></fieldset>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="save-def">บันทึก</button><span class="note" id="save-msg" aria-live="polite"></span></div>
+  </div>
+  <div class="card">
+    <div class="ph"><span data-pico="S" data-cls="sm"></span><h3>อัปโหลดไฟล์รายเดือน</h3></div>
+    <p class="sub" style="margin-top:4px">แถวละ 1 แผนกต่อเดือน ใช้หัวคอลัมน์ตามนี้</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0">
+      <code id="cols">เดือน, แผนก, กลุ่มบุคลากร, เพศ, จำนวนพนักงาน, รับเข้า, ลาออก, ชั่วโมงอบรม, อุบัติเหตุหยุดงาน, วันหยุดงาน, เข็มทิ่มตำ</code>
+      <button class="btn ghost" id="copy-cols">คัดลอกหัวคอลัมน์</button>
+    </div>
+    <label class="drop" for="up-file">ลากไฟล์ CSV หรือ Excel มาวาง หรือกดเพื่อเลือกไฟล์<input type="file" id="up-file" accept=".csv,.xlsx"></label>
+    <p class="note" id="up-msg" aria-live="polite" style="margin:10px 0 0">รับเฉพาะยอดรวมรายแผนก ถ้าในไฟล์มีชื่อหรือเลขบัตรประชาชน ระบบจะไม่รับไฟล์</p>
+  </div>
+  </div>
+</div></section>
+
+<!-- ===== REPORT ===== -->
+<section id="v-report" hidden><div class="wrap" style="max-width:1280px">
+  <div class="bar-r"><label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" checked id="autosave">บันทึกอัตโนมัติหลังแก้ไข</label><button class="btn ghost">บันทึกข้อมูลชุดใหม่</button><button class="btn">ส่งออก PDF และ Word</button></div>
+  <div class="rep">
+    <div class="left card" style="padding:10px"><div class="lbl" style="padding:6px 12px">บทในรายงาน</div><div id="chaps"></div></div>
+    <div class="mid">
+      <p class="note" style="margin:0 0 8px">กดตัวเลขที่ขีดเส้นประเพื่อดูที่มาและวิธีคำนวณ</p>
+      <article class="doc" id="doc"></article>
+    </div>
+    <aside class="card" id="r-detail" aria-live="polite"></aside>
+  </div>
+</div></section>
+
+<!-- ===== STAFF PORTAL ===== -->
+<section id="v-portal" hidden><div class="wrap portal">
+  <div class="row-between"><div><h2 style="font-size:22px">Staff Portal</h2><p class="sub">ขอบเขตของคุณ: ทั้งองค์กร</p></div><button class="btn ghost" data-go="home">กลับไปหน้าหลัก</button></div>
+  <div class="card" style="border-color:var(--warn);background:var(--warn-bg)"><b>งานที่ได้รับมอบหมาย</b><div class="note">เกินกำหนด 2 · ต้องทำ <span id="todo-count">5</span></div></div>
+  <div class="qa">
+    <div class="card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><div><b>ถ่ายรูป</b><div class="note">ถ่ายมิเตอร์หรือบิลแล้วส่งตรวจ</div></div></div>
+    <div class="card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg></span><div><b>อัปโหลดไฟล์</b><div class="note">PDF รูปภาพ หรือไฟล์รายเดือน</div></div></div>
+    <div class="card"><span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span><div><b>เพิ่มรายการ</b><div class="note">พิมพ์ค่าที่อ่านได้เอง</div></div></div>
+    <div class="card"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><div><b>ประวัติของฉัน</b><div class="note">รายการและไฟล์ที่ส่งไปแล้ว</div></div></div>
+  </div>
+  <div class="card">
+    <div class="row-between"><h3>งานที่ได้รับมอบหมาย</h3><div class="chips" id="task-filter" aria-label="กรองตามมิติ"></div></div>
+    <div id="task-list" style="margin-top:4px"></div>
+  </div>
+</div></section>
+
+<!-- ===== STUB ===== -->
+<section id="v-stub" hidden><div class="wrap"><div class="card"><h3>หน้านี้ไม่มีการเปลี่ยนแปลง</h3><p class="sub" style="margin-top:4px">เดโมนี้แสดงเฉพาะหน้าที่แทรกเรื่องสังคมและธรรมาภิบาล ลองดูที่แดชบอร์ด หน้าแรก แหล่งข้อมูล รายงาน หรืองาน</p><button class="link" data-go="dashboard" style="margin-top:10px">ไปที่แดชบอร์ด →</button></div></div></section>
+
+</main>
+</div>
+</div>
+<div class="helper" aria-hidden="true"><i>ฮ</i><span><b>น้องฮีลใจ</b><br>ผู้ช่วยคู่คิดใน HEALL</span></div>
+
+<script>
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = s => document.querySelector(s);
+const ICON = {
+  all:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+  people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c3 .3 5.5 2.6 5.5 5.8"/>',
+  shield:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  patient:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  board:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  ethics:'<path d="M12 4v16M5 8h14M5 8l-2.5 6a3 3 0 0 0 5 0zM19 8l-2.5 6a3 3 0 0 0 5 0z"/>',
+  risk:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'
+};
+const ic = (k,c,bg) => `<span class="ico" style="background:var(${bg});color:var(${c})"><svg viewBox="0 0 24 24">${ICON[k]}</svg></span>`;
+
+const PICON={E:'<path d="M5 19c8 0 14-6 14-14C11 5 5 11 5 19z"/><path d="M5 19l7-7"/>',
+  S:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c3 .3 5.5 2.6 5.5 5.8"/>',
+  G:'<path d="M3 9l9-5 9 5"/><path d="M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18"/>',
+  A:'<circle cx="8" cy="9" r="3.6"/><circle cx="16" cy="9" r="3.6"/><circle cx="12" cy="16" r="3.6"/>'};
+const PNAME={E:"สิ่งแวดล้อม",S:"สังคม",G:"ธรรมาภิบาล",A:"ภาพรวม ESG"};
+const PVAR={E:"--brand",S:"--s",G:"--g"};
+const pico=(p,cls="")=>`<span class="pico p${p} ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${PICON[p]}</svg></span>`;
+function ring(pct,c,size=84,label=""){
+  const r=size/2-7,C=2*Math.PI*r,off=C*(1-pct/100),t=(pct%1?pct.toFixed(1):pct)+"%";
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${esc(label)} ${t}" style="flex:none"><circle cx="${size/2}" cy="${size/2}" r="${r}" style="fill:none;stroke:var(--grid)" stroke-width="8"/><circle cx="${size/2}" cy="${size/2}" r="${r}" style="fill:none;stroke:var(${c})" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" style="fill:var(--fg);font-family:var(--font);font-size:${size>70?16:13}px;font-weight:600">${t}</text></svg>`;
+}
+function spark(d,c,label){
+  const W=240,H=46,p=5,mn=Math.min(...d),mx=Math.max(...d),rg=mx-mn||1;
+  const pts=d.map((v,i)=>[p+i*(W-2*p)/(d.length-1),p+(H-2*p)*(1-(v-mn)/rg)]);
+  const line=pts.map(q=>q[0].toFixed(1)+","+q[1].toFixed(1)).join(" "),e=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}"><polygon points="${p},${H} ${line} ${W-p},${H}" style="fill:var(${c});fill-opacity:.13"/><polyline points="${line}" style="fill:none;stroke:var(${c})" stroke-width="2"/><circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="3.5" style="fill:var(${c})"/></svg>`;
+}
+const TR={staff:[4782,4790,4801,4806,4812,4820],turnover:[9.8,9.6,9.5,9.4,9.3,9.2],nurse:[12.6,12.3,12.0,11.7,11.4,11.2],training:[1.2,3.0,4.9,6.6,8.4,10.1],women:[44,44,45,45,46,46],injury:[1,1,2,0,1,1],needle:[1,0,2,1,2,1],lostdays:[8,7,8,6,6,6],complaint:[6,5,4,7,5,4],incident:[0,1,0,0,1,0],access:[33,33,34,34,34,34]};
+const GR={board:36,boardw:18,attend:94,abc:71};
+function vizFor(k){
+  if(TR[k]) return spark(TR[k],"--s",M[k].name+" รายเดือน ม.ค.–มิ.ย.");
+  if(GR[k]!=null) return `<span class="segbar" style="height:8px" aria-hidden="true"><i style="flex:${GR[k]};background:var(--g)"></i><i style="flex:${100-GR[k]};background:var(--grid)"></i></span>`;
+  return "";
+}
+const HP={
+  E:{ring:56.7,frac:"347/612 จุดวัด",lbl:"คาร์บอนรวม",val:"16.2K",unit:"tCO₂e",chg:"↓ 44%",cls:"ok",sp:[3380,3540,3400,3890,1010,290],spl:"คาร์บอนรายเดือน ม.ค.–มิ.ย.",st:[["พลังงาน","27.3M kWh"],["น้ำ","211.7K m³"],["ขยะ","470.8K kg"]]},
+  S:{ring:91.7,frac:"11/12 ตัวชี้วัด",lbl:"อัตราลาออกต่อปี",val:"9.2",unit:"%",chg:"↓ 0.6 จุด",cls:"ok",sp:[40,36,38,46,31,29],spl:"คนลาออกรายเดือน ม.ค.–มิ.ย.",st:[["พนักงาน","4,820 คน"],["เข็มทิ่มตำ","7 ครั้ง ↑ 2"],["อบรมเฉลี่ย","10.1 ชม."]]},
+  G:{ring:85.7,frac:"12/14 หัวข้อ",lbl:"กรรมการอิสระ",val:"36",unit:"%",chg:"ผ่านเกณฑ์ 1 ใน 3",cls:"ok",docs:[4,1,2],st:[["อบรมต่อต้านทุจริต","71%"],["แจ้งเบาะแส","5 เรื่อง"],["ข้อมูลรั่วไหล","0 ครั้ง"]]}
+};
+function renderHome(){
+  $("#home-pillars").innerHTML=["E","S","G"].map(p=>{const h=HP[p];
+    const viz=h.sp?spark(h.sp,PVAR[p],h.spl)+`<div class="note">${esc(h.spl)}</div>`:
+      `<span class="segbar" aria-hidden="true"><i style="flex:${h.docs[0]};background:var(--ok)"></i><i style="flex:${h.docs[1]};background:var(--warn)"></i><i style="flex:${h.docs[2]};background:var(--bad)"></i></span><div class="note" style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap"><span>เอกสารพร้อม ${h.docs[0]}</span><span>ใกล้หมดอายุ ${h.docs[1]}</span><span>ยังขาด ${h.docs[2]}</span></div>`;
+    return `<div class="card pcard" style="--c:var(${PVAR[p]})"><div class="row-between"><div class="ph">${pico(p,"lg")}<div><h3>${PNAME[p]}</h3><div class="note">ข้อมูลพร้อม ${esc(h.frac)}</div></div></div><button class="link" data-go="dashboard" data-pillar="${p}">เปิด →</button></div>
+    <div class="pbody">${ring(h.ring,PVAR[p],84,"ข้อมูลพร้อม")}<div><div class="lbl">${esc(h.lbl)}</div><div class="big">${esc(h.val)} <small>${esc(h.unit)}</small></div><span class="pill ${h.cls}">${esc(h.chg)}</span></div></div>
+    ${viz}<div class="stats">${h.st.map(x=>`<div><span class="note">${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("")}</div></div>`;}).join("");
+}
+const SICON={scan:'<path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3"/><path d="M8 12h8"/>',pen:'<path d="M4 20l4-1 11-11-3-3L5 16z"/>',meter:'<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/>',cart:'<path d="M3 4h2l2 11h11l2-8H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',plug:'<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>',file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',survey:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>'};
+const SRC={
+  E:{ring:56.7,frac:"347/612 จุดวัด",rows:[["scan","สแกนบิล","ค่าไฟ ค่าน้ำ · รับล่าสุด 18 ต.ค. 2569 18:33","ok","เสร็จสิ้น"],["pen","บันทึกด้วยมือ","มิเตอร์ ขยะ · รับล่าสุด 18 ต.ค. 2569 18:36","ok","เสร็จสิ้น"],["meter","มิเตอร์อัจฉริยะ","ไฟฟ้า 12 จุด · ส่งข้อมูลทุก 15 นาที","ok","ออนไลน์"],["cart","ข้อมูลจัดซื้อ","สินค้าที่ซื้อ · อัปโหลดรายไตรมาส","warn","Q3 ยังไม่ส่ง"]]},
+  S:{ring:91.7,frac:"11/12 ตัวชี้วัด",rows:[["plug","ระบบ HR","พนักงาน ลาออก อบรม อุบัติเหตุ · ดึงผ่าน API ทุกวัน 06:00","ok","เชื่อมแล้ว"],["file","ระบบโรงพยาบาล (HIS)","ข้อร้องเรียน สิทธิ์การรักษา · อัปโหลดเดือนละครั้ง","ok","ล่าสุด มิ.ย."],["file","ระบบความเสี่ยง","เข็มทิ่มตำ อุบัติการณ์ทางคลินิก · อัปโหลดเดือนละครั้ง","warn","ก.ค. ยังไม่ส่ง"],["survey","ผลสำรวจความพึงพอใจผู้ป่วย","ศูนย์คุณภาพ · ปีละ 2 ครั้ง","bad","ยังไม่มี"]]},
+  G:{ring:85.7,frac:"12/14 หัวข้อ",rows:[["users","ทะเบียนกรรมการ","องค์ประกอบคณะกรรมการ การเข้าประชุม · ปีละครั้ง","ok","ล่าสุด ต.ค."],["plug","ระบบ HR","อบรมต่อต้านคอร์รัปชัน · ดึงอัตโนมัติ","ok","เชื่อมแล้ว"],["file","เอกสารนโยบาย","นโยบาย จรรยาบรรณ ผลประเมินความเสี่ยง · แนบปีละครั้ง","bad","ขาด 2 ไฟล์"],["survey","ใบรับรอง","HA, ISO 14001 · เตือนก่อนหมดอายุ 6 เดือน","warn","HA ใกล้หมดอายุ"]]}
+};
+function renderSources(){
+  $("#src-pillars").innerHTML=["E","S","G"].map(p=>{const d=SRC[p],need=d.rows.filter(r=>r[3]!=="ok").length;
+    return `<div class="card pcard" style="--c:var(${PVAR[p]})"><div class="row-between"><div class="ph">${pico(p,"lg")}<div><h3>${PNAME[p]}${p==="E"?"":' <span class="new">ใหม่</span>'}</h3><div class="note">${d.rows.length} แหล่งข้อมูล · ต้องดู ${need} · ข้อมูลพร้อม ${esc(d.frac)}</div></div></div>${ring(d.ring,PVAR[p],60,"ข้อมูลพร้อม")}</div>
+    <div style="margin-top:6px">${d.rows.map(r=>`<div class="row"><div class="ph"><span class="pico pA" aria-hidden="true"><svg viewBox="0 0 24 24">${SICON[r[0]]}</svg></span><div style="min-width:0"><b>${esc(r[1])}</b><div class="note">${esc(r[2])}</div></div></div><span class="pill ${r[3]}">${esc(r[4])}</span></div>`).join("")}</div></div>`;}).join("");
+}
+/* ---------- metric catalogue (sample data) ---------- */
+const M = {
+  staff:{p:"S",cat:"people",name:"พนักงานทั้งหมด",val:"4,820",unit:"คน",chg:"+38 คน",cls:"neu",src:"ระบบ HR · อัตโนมัติ",formula:"นับพนักงานประจำ ณ วันสิ้นเดือน",def:"ไม่รวมลูกจ้างรายวันและแพทย์ที่ปรึกษา",approve:"ฝ่ายบุคคล · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 2-7",
+    cols:["กลุ่ม","จำนวน","หญิง"],rows:[["แพทย์","612","51%"],["พยาบาล","1,904","94%"],["สหวิชาชีพ","846","76%"],["สนับสนุนและบริหาร","1,458","71%"]]},
+  turnover:{p:"S",cat:"people",name:"อัตราลาออก (ต่อปี)",val:"9.2",unit:"%",chg:"↓ 0.6 จุด",cls:"ok",src:"ระบบ HR · อัตโนมัติ",formula:"(คนลาออก 6 เดือน ÷ พนักงานเฉลี่ยรายเดือน) × 2",def:"ไม่นับสัญญาจ้างรายวัน",approve:"ฝ่ายบุคคล · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 401-1",
+    cols:["กลุ่ม","ลาออก (คน)","อัตราต่อปี"],rows:[["แพทย์","15","4.9%"],["พยาบาล","107","11.2%"],["สหวิชาชีพ","33","7.8%"],["สนับสนุนและบริหาร","65","8.9%"]]},
+  nurse:{p:"S",cat:"people",name:"อัตราลาออกพยาบาล",val:"11.2",unit:"%",chg:"↓ 1.4 จุด",cls:"ok",src:"ระบบ HR · อัตโนมัติ",formula:"(พยาบาลลาออก ÷ พยาบาลเฉลี่ยรายเดือน) × 2",def:"พยาบาล = วิชาชีพ + เทคนิค",approve:"ฝ่ายการพยาบาล · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 401-1",
+    cols:["หน่วย","อัตราต่อปี"],rows:[["ICU","18.0%"],["ห้องฉุกเฉิน","14.7%"],["ห้องผ่าตัด","12.3%"],["หอผู้ป่วยใน","9.8%"],["ผู้ป่วยนอก","6.2%"]]},
+  training:{p:"S",cat:"people",name:"ชั่วโมงอบรมเฉลี่ย",val:"10.1",unit:"ชม./คน",chg:"เป้าทั้งปี 24",cls:"warn",src:"ระบบ HR · อัตโนมัติ",formula:"ชั่วโมงอบรมรวม ÷ จำนวนพนักงาน",def:"นับทั้งอบรมภายในและภายนอก",approve:"ฝ่ายพัฒนาบุคลากร · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 404-1",
+    cols:["กลุ่ม","ชม./คน"],rows:[["แพทย์","14.0"],["พยาบาล","12.1"],["สหวิชาชีพ","9.8"],["สนับสนุนและบริหาร","6.1"]]},
+  women:{p:"S",cat:"people",name:"ผู้หญิงในระดับบริหาร",val:"46",unit:"%",chg:"+2 จุด",cls:"ok",src:"ระบบ HR · อัตโนมัติ",formula:"ผู้บริหารหญิง ÷ ผู้บริหารทั้งหมด",def:"ระดับหัวหน้าแผนกขึ้นไป",approve:"ฝ่ายบุคคล · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 405-1",
+    cols:["ระดับ","หญิง"],rows:[["ผู้บริหารระดับสูง","33%"],["ผู้อำนวยการฝ่าย","41%"],["หัวหน้าแผนก","52%"]]},
+  injury:{p:"S",cat:"shield",name:"อุบัติเหตุจากงาน (หยุดงาน)",val:"6",unit:"ครั้ง",chg:"LTIFR 0.42",cls:"neu",src:"ระบบ HR · อัตโนมัติ",formula:"LTIFR = อุบัติเหตุหยุดงาน × 1,000,000 ÷ ชั่วโมงทำงานรวม",def:"นับตั้งแต่หยุดงาน 1 วัน",approve:"คณะกรรมการความปลอดภัย · 3 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 403-9",
+    cols:["ประเภท","ครั้ง"],rows:[["ยกหรือเคลื่อนย้ายผู้ป่วย","3"],["ลื่นหกล้ม","2"],["อื่น ๆ","1"]]},
+  needle:{p:"S",cat:"shield",name:"เหตุเข็มทิ่มตำ",val:"7",unit:"ครั้ง",chg:"↑ 2 ครั้ง",cls:"bad",src:"ระบบความเสี่ยง · อัปโหลดรายเดือน",formula:"นับทุกเหตุที่รายงาน แม้ไม่หยุดงาน",def:"รวมของมีคมทุกชนิด",approve:"หน่วยควบคุมการติดเชื้อ · 3 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 403-9",
+    cols:["หน่วย","ครั้ง"],rows:[["ห้องฉุกเฉิน","4"],["ห้องผ่าตัด","2"],["หอผู้ป่วยใน","1"]]},
+  lostdays:{p:"S",cat:"shield",name:"วันหยุดงานจากอุบัติเหตุ",val:"41",unit:"วัน",chg:"↓ 9 วัน",cls:"ok",src:"ระบบ HR · อัตโนมัติ",formula:"รวมวันลาจากอุบัติเหตุในงาน",def:"นับวันทำงาน ไม่รวมวันหยุด",approve:"ฝ่ายบุคคล · 2 ก.ค. 2569",ref:"56-1 ด้านสังคม · GRI 403-9",
+    cols:["เดือน","วัน"],rows:[["ม.ค.–มี.ค.","23"],["เม.ย.–มิ.ย.","18"]]},
+  complaint:{p:"S",cat:"patient",name:"ข้อร้องเรียนจากผู้ป่วย",val:"31",unit:"เรื่อง",chg:"ปิดแล้ว 92%",cls:"ok",src:"HIS · อัปโหลดรายเดือน",formula:"นับเรื่องที่รับเข้าระบบในช่วงเวลา",def:"ไม่รวมคำชมและข้อเสนอแนะ",approve:"ศูนย์คุณภาพ · 3 ก.ค. 2569",ref:"56-1 ด้านสังคม (ความรับผิดชอบต่อผู้ป่วย)",
+    cols:["เรื่อง","จำนวน"],rows:[["บริการและการสื่อสาร","18"],["ระยะเวลารอคอย","9"],["ค่าใช้จ่าย","4"]]},
+  incident:{p:"S",cat:"patient",name:"อุบัติการณ์ทางคลินิกรุนแรง",val:"2",unit:"ครั้ง",chg:"เท่าเดิม",cls:"neu",src:"ระบบความเสี่ยง · อัปโหลดรายเดือน",formula:"นับอุบัติการณ์ระดับ E ถึง I",def:"ตามเกณฑ์ระดับความรุนแรงของ สรพ.",approve:"ศูนย์คุณภาพ · 3 ก.ค. 2569",ref:"56-1 ด้านสังคม (ความปลอดภัยผู้ป่วย)",
+    cols:["ระดับ","ครั้ง"],rows:[["E–F","2"],["G–I","0"]]},
+  access:{p:"S",cat:"patient",name:"ผู้ป่วยสิทธิ์ภาครัฐ",val:"34",unit:"%",chg:"+1 จุด",cls:"neu",src:"HIS · อัปโหลดรายเดือน",formula:"ครั้งการรักษาสิทธิ์บัตรทองและประกันสังคม ÷ ครั้งการรักษาทั้งหมด",def:"นับทั้งผู้ป่วยนอกและใน",approve:"ฝ่ายสิทธิประโยชน์ · 3 ก.ค. 2569",ref:"56-1 ด้านสังคม (การเข้าถึงบริการ)",
+    cols:["สิทธิ์","สัดส่วน"],rows:[["ประกันสังคม","21%"],["บัตรทอง","13%"],["อื่น ๆ","66%"]]},
+  satisfaction:{p:"S",cat:"patient",name:"ความพึงพอใจผู้ป่วย",missing:true,miss:"ผลสำรวจอยู่ที่ศูนย์คุณภาพ"},
+
+  board:{p:"G",cat:"board",name:"กรรมการอิสระ",val:"4/11",unit:"คน",chg:"36% · ผ่านเกณฑ์ 1 ใน 3",cls:"ok",src:"เอกสาร · ทะเบียนกรรมการ",formula:"กรรมการอิสระ ÷ กรรมการทั้งหมด",def:"ตามนิยามกรรมการอิสระของ ก.ล.ต.",approve:"เลขานุการบริษัท · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 2-9",
+    cols:["ตำแหน่ง","จำนวน"],rows:[["กรรมการทั้งหมด","11"],["กรรมการอิสระ","4"],["กรรมการที่เป็นผู้บริหาร","3"]]},
+  boardw:{p:"G",cat:"board",name:"กรรมการหญิง",val:"2/11",unit:"คน",chg:"+1 คน",cls:"ok",src:"เอกสาร · ทะเบียนกรรมการ",formula:"กรรมการหญิง ÷ กรรมการทั้งหมด",def:"นับ ณ วันสิ้นรอบปี",approve:"เลขานุการบริษัท · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 405-1",
+    cols:["รายการ","จำนวน"],rows:[["กรรมการหญิง","2"],["กรรมการชาย","9"]]},
+  attend:{p:"G",cat:"board",name:"การเข้าประชุมกรรมการ",val:"94",unit:"%",chg:"ประชุม 8 ครั้ง",cls:"ok",src:"เอกสาร · รายงานการประชุม",formula:"ครั้งที่เข้าประชุม ÷ ครั้งที่ควรเข้า",def:"เฉพาะคณะกรรมการบริษัท",approve:"เลขานุการบริษัท · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ",
+    cols:["รายการ","ค่า"],rows:[["จำนวนครั้งที่ประชุม","8"],["อัตราเข้าประชุมเฉลี่ย","94%"]]},
+  abc:{p:"G",cat:"ethics",name:"อบรมต่อต้านคอร์รัปชัน",val:"71",unit:"%",chg:"เป้า 100%",cls:"warn",src:"ระบบ HR · อัตโนมัติ",formula:"พนักงานที่อบรมแล้ว ÷ พนักงานทั้งหมด",def:"หลักสูตรออนไลน์ภาคบังคับ",approve:"ฝ่ายกฎหมาย · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 205-2",
+    cols:["กลุ่ม","อบรมแล้ว"],rows:[["ผู้บริหาร","100%"],["แพทย์","58%"],["พยาบาล","69%"],["อื่น ๆ","76%"]]},
+  whistle:{p:"G",cat:"ethics",name:"เรื่องแจ้งเบาะแส",val:"5",unit:"เรื่อง",chg:"ปิดแล้ว 4",cls:"ok",src:"เอกสาร · รายงานคณะกรรมการตรวจสอบ",formula:"นับเรื่องที่รับในรอบปี",def:"ทุกช่องทางที่บริษัทประกาศ",approve:"เลขานุการบริษัท · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 2-26",
+    cols:["สถานะ","เรื่อง"],rows:[["ปิดแล้ว ไม่พบมูล","3"],["ปิดแล้ว ดำเนินการแก้ไข","1"],["กำลังตรวจสอบ","1"]]},
+  breach:{p:"G",cat:"risk",name:"ข้อมูลส่วนบุคคลรั่วไหล",val:"0",unit:"ครั้ง",chg:"เท่าเดิม",cls:"ok",src:"ฝ่ายไอที · อัปโหลด",formula:"นับเหตุที่ต้องแจ้งสำนักงาน PDPC",def:"รวมเหตุจากผู้ให้บริการภายนอก",approve:"เจ้าหน้าที่คุ้มครองข้อมูล (DPO) · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 418-1",
+    cols:["รายการ","ครั้ง"],rows:[["เหตุที่ต้องแจ้ง PDPC","0"],["คำร้องเรียนด้านข้อมูลส่วนบุคคล","2"]]},
+  fines:{p:"G",cat:"risk",name:"ค่าปรับด้านกฎระเบียบ",val:"0",unit:"บาท",chg:"ไม่มีคดี",cls:"ok",src:"ฝ่ายกฎหมาย · อัปโหลด",formula:"รวมค่าปรับที่ชำระในรอบปี",def:"ทุกหน่วยงานกำกับ",approve:"ฝ่ายกฎหมาย · 5 ต.ค. 2569",ref:"56-1 การกำกับดูแลกิจการ · GRI 2-27",
+    cols:["รายการ","ค่า"],rows:[["คดีที่สิ้นสุดในปี","0"],["ค่าปรับรวม","0 บาท"]]}
+};
+const DOCS = [
+  {cat:"ethics",t:"นโยบายการกำกับดูแลกิจการ",v:"ทบทวน มี.ค. 2569",s:"ok",st:"พร้อม"},
+  {cat:"ethics",t:"จรรยาบรรณธุรกิจ",v:"ฉบับ 2568",s:"ok",st:"พร้อม"},
+  {cat:"ethics",t:"นโยบายต่อต้านคอร์รัปชัน",v:"ยังไม่แนบฉบับลงนาม",s:"bad",st:"ยังขาด",go:"portal"},
+  {cat:"risk",t:"นโยบายคุ้มครองข้อมูลส่วนบุคคล",v:"ฉบับ 2567",s:"ok",st:"พร้อม"},
+  {cat:"risk",t:"ผลประเมินความเสี่ยงด้าน ESG",v:"ยังไม่ได้ทำ",s:"bad",st:"ยังขาด",go:"portal"},
+  {cat:"risk",t:"การรับรอง HA",v:"หมดอายุ 31 มี.ค. 2570",s:"warn",st:"ใกล้หมดอายุ",go:"portal"},
+  {cat:"risk",t:"ISO 14001",v:"หมดอายุ 12 ส.ค. 2571",s:"ok",st:"พร้อม"}
+];
+const S_TABS=[["all","ภาพรวม","11/12 พร้อม"],["people","บุคลากร","ลาออก 9.2%"],["shield","ความปลอดภัย","เข็มทิ่มตำ ↑ 2"],["patient","ผู้ป่วย","ขาด 1 ตัวชี้วัด"]];
+const G_TABS=[["all","ภาพรวม","12/14 พร้อม"],["board","คณะกรรมการ","อิสระ 36%"],["ethics","จริยธรรม","ขาด 1 นโยบาย"],["risk","ความเสี่ยงและการรับรอง","HA ใกล้หมดอายุ"]];
+const CATNAME={people:"บุคลากร",shield:"ความปลอดภัยของบุคลากร",patient:"ผู้ป่วยและชุมชน",board:"คณะกรรมการ",ethics:"จริยธรรมและการต่อต้านคอร์รัปชัน",risk:"ความเสี่ยงและการรับรอง"};
+const WATCH_S=[["ICU","อัตราลาออกพยาบาล 18.0% · สูงกว่าค่าเฉลี่ย 6.8 จุด","people"],["ห้องฉุกเฉิน","เข็มทิ่มตำ 4 ครั้ง · เพิ่มขึ้น 2 ครั้ง","shield"],["ฝ่ายสนับสนุน","อบรม 6.1 ชม./คน · ต่ำกว่าแผนครึ่งปี","people"],["ความพึงพอใจผู้ป่วย","ยังไม่มีข้อมูล · ขอไฟล์จากศูนย์คุณภาพแล้ว","patient"]];
+const WATCH_G=[["นโยบายต่อต้านคอร์รัปชัน","ยังไม่แนบฉบับลงนาม · มอบหมายฝ่ายกฎหมาย","ethics"],["การรับรอง HA","หมดอายุ 31 มี.ค. 2570 · เหลือ 5 เดือน","risk"],["อบรมต่อต้านคอร์รัปชัน","แพทย์อบรมแล้ว 58% · ต่ำสุดในทุกกลุ่ม","ethics"]];
+const T = [
+  {t:"แนบนโยบายต่อต้านคอร์รัปชัน (ฉบับลงนาม)",who:"ฝ่ายกฎหมาย",due:"15 พ.ย. 2569",late:false,p:"G"},
+  {t:"ส่งผลสำรวจความพึงพอใจผู้ป่วย ปี 2569",who:"ศูนย์คุณภาพ",due:"30 พ.ย. 2569",late:false,p:"S"},
+  {t:"ส่งข้อมูลระบบความเสี่ยง เดือน ก.ค.",who:"หน่วยบริหารความเสี่ยง",due:"10 ส.ค. 2569",late:true,p:"S"},
+  {t:"เตรียมเอกสารต่ออายุ HA",who:"ศูนย์คุณภาพ",due:"31 ธ.ค. 2569",late:false,p:"G"},
+  {t:"ตรวจข้อมูลไฟฟ้าที่ขาด",who:"ฝ่ายวิศวกรรม",due:"30 มิ.ย. 2569",late:true,p:"E"}
+];
+
+/* ---------- chart ---------- */
+function barChart(el, labels, series, line, max, ticks){
+  const W=560,H=250,L=44,R=10,Tp=12,B=28,pw=W-L-R,ph=H-Tp-B,bw=pw/labels.length;
+  const y=v=>Tp+ph-(v/max)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="chart" xmlns="http://www.w3.org/2000/svg">`;
+  ticks.forEach(t=>{s+=`<line x1="${L}" x2="${W-R}" y1="${y(t.v)}" y2="${y(t.v)}" style="stroke:var(--grid)"/><text x="${L-8}" y="${y(t.v)+4}" text-anchor="end">${t.l}</text>`;});
+  labels.forEach((lab,i)=>{
+    const x=L+i*bw+bw*0.22,w=bw*0.56; let base=0;
+    series.forEach(se=>{const v=se.data[i]; s+=`<rect x="${x}" y="${y(base+v)}" width="${w}" height="${y(base)-y(base+v)}" style="fill:${se.color}" rx="2"/>`; base+=v;});
+    s+=`<text x="${L+i*bw+bw/2}" y="${H-8}" text-anchor="middle">${lab}</text>`;
+  });
+  if(line){const pts=line.map((v,i)=>`${L+i*bw+bw/2},${y(v)}`).join(" ");
+    s+=`<polyline points="${pts}" style="fill:none;stroke:var(--muted)" stroke-dasharray="4 4" stroke-width="1.5"/>`;
+    line.forEach((v,i)=>{s+=`<circle cx="${L+i*bw+bw/2}" cy="${y(v)}" r="3.5" style="fill:var(--surface);stroke:var(--muted)" stroke-width="1.5"/>`;});}
+  el.outerHTML = s.replace('<svg ',`<svg id="${el.id}" role="img" aria-label="${esc(el.getAttribute("aria-label")||"")}" `)+"</svg>";
+}
+const MONTHS=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย."];
+
+/* ---------- shared renderers ---------- */
+function detailHTML(k){
+  const m=M[k];
+  const head=m.cols.map((c,i)=>`<th${i?' class="n"':''}>${esc(c)}</th>`).join("");
+  const body=m.rows.map(r=>"<tr>"+r.map((c,i)=>`<td${i?' class="n"':''}>${esc(c)}</td>`).join("")+"</tr>").join("");
+  return `<div class="row-between"><h3>${esc(m.name)}</h3><span class="pill ${m.cls}">${esc(m.chg)}</span></div>
+  <div class="big" style="margin-top:4px">${esc(m.val)} <small>${esc(m.unit)}</small></div>
+  <div class="tbl" style="margin-top:8px"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+  <div class="kv"><div><span>มาจาก</span>${esc(m.src)}</div><div><span>วิธีคิด</span>${esc(m.formula)}</div><div><span>นิยามที่ตั้งไว้</span>${esc(m.def)}</div><div><span>ผู้อนุมัติ</span>${esc(m.approve)}</div><div><span>ใช้ในรายงาน</span>${esc(m.ref)}</div></div>`;
+}
+function metricCard(k,cls){
+  const m=M[k];
+  if(m.missing) return `<button class="metric missing" data-go="portal"><span class="lbl">${esc(m.name)}</span><span style="font-size:17px;font-weight:500;margin-top:6px">ยังไม่มีข้อมูล</span><span class="note">${esc(m.miss)}</span><span class="link" style="margin-top:4px">ดูงานที่มอบหมาย →</span></button>`;
+  return `<button class="metric ${cls}" data-k="${k}" aria-pressed="false"><span class="lbl">${esc(m.name)}</span><span class="mid">${esc(m.val)} <small>${esc(m.unit)}</small></span><span><span class="pill ${m.cls}">${esc(m.chg)}</span></span>${vizFor(k)}<span class="src">${esc(m.src)}</span></button>`;
+}
+function tabsHTML(list,cur,cls,c,bg){
+  return list.map(([k,n,sub])=>`<button class="tab ${cls}" role="tab" data-cat="${k}" aria-selected="${k===cur}">${ic(k,c,bg)}<span><b>${esc(n)}</b><span class="lbl">${esc(sub)}</span></span></button>`).join("");
+}
+function watchHTML(list){
+  return `<div class="card"><h3>ต้องติดตาม <span class="note" style="font-weight:400">เทียบช่วงก่อนหน้า</span></h3>${list.map(w=>`<div class="list-row"><div><b>${esc(w[0])}</b><div class="note">${esc(w[1])}</div></div><span aria-hidden="true">›</span></div>`).join("")}</div>`;
+}
+function wireMetrics(root,detailEl){
+  root.querySelectorAll(".metric[data-k]").forEach(b=>b.addEventListener("click",()=>{
+    const on=b.getAttribute("aria-pressed")!=="true";
+    root.querySelectorAll(".metric[data-k]").forEach(x=>x.setAttribute("aria-pressed","false"));
+    if(on){b.setAttribute("aria-pressed","true");detailEl.innerHTML=`<div class="detail">${detailHTML(b.dataset.k)}</div>`;detailEl.scrollIntoView({block:"nearest",behavior:"smooth"});}
+    else detailEl.innerHTML="";
+  }));
+}
+
+/* ---------- S ---------- */
+let sCat="all";
+function renderS(){
+  $("#s-tabs").innerHTML=tabsHTML(S_TABS,sCat,"s","--s","--s-soft");
+  const cats = sCat==="all"?["people","shield","patient"]:[sCat];
+  let h="";
+  if(sCat==="all"){
+    h+=`<div class="card"><div class="row-between"><h3>พนักงานลาออกรายเดือน</h3><span class="note">ครึ่งปีแรก 220 คน · ↓ 6% เทียบ ก.ค.–ธ.ค. 2568</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:8px"><div style="flex:1.3 1 380px;min-width:0"><svg id="chart-s" aria-label="จำนวนพนักงานลาออกรายเดือน ม.ค. ถึง มิ.ย. 2569 แยกพยาบาลและกลุ่มอื่น"></svg>
+      <div class="note" style="display:flex;gap:14px;flex-wrap:wrap"><span><span style="display:inline-block;width:10px;height:10px;background:var(--s);border-radius:2px"></span> พยาบาล</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--line-strong);border-radius:2px"></span> กลุ่มอื่น</span><span>- - - ค่าเฉลี่ย ก.ค.–ธ.ค. 2568</span></div></div>
+      <div style="flex:1 1 280px;min-width:0" class="tbl"><table><thead><tr><th>กลุ่ม</th><th class="n">คน</th><th class="n">ลาออก</th><th class="n">อัตรา/ปี</th></tr></thead><tbody>
+      <tr><td>แพทย์</td><td class="n">612</td><td class="n">15</td><td class="n">4.9%</td></tr><tr><td>พยาบาล</td><td class="n">1,904</td><td class="n">107</td><td class="n">11.2%</td></tr><tr><td>สหวิชาชีพ</td><td class="n">846</td><td class="n">33</td><td class="n">7.8%</td></tr><tr><td>สนับสนุนและบริหาร</td><td class="n">1,458</td><td class="n">65</td><td class="n">8.9%</td></tr></tbody></table></div></div></div>`;
+  }
+  cats.forEach(c=>{
+    const keys=Object.keys(M).filter(k=>M[k].p==="S"&&M[k].cat===c);
+    h+=`<div class="sect"><h3>${CATNAME[c]}</h3><div class="grid4">${keys.map(k=>metricCard(k,"")).join("")}</div></div>`;
+  });
+  h+=`<div id="s-detail"></div>`;
+  h+=watchHTML(sCat==="all"?WATCH_S:WATCH_S.filter(w=>w[2]===sCat).length?WATCH_S.filter(w=>w[2]===sCat):WATCH_S);
+  $("#s-body").innerHTML=h;
+  if(sCat==="all") barChart($("#chart-s"),MONTHS,[{color:"var(--s)",data:[19,17,20,22,15,14]},{color:"var(--line-strong)",data:[21,19,18,24,16,15]}],[39,39,39,39,39,39],50,[{v:0,l:"0"},{v:25,l:"25"},{v:50,l:"50"}]);
+  wireMetrics($("#s-body"),$("#s-detail"));
+}
+/* ---------- G ---------- */
+let gCat="all";
+function renderG(){
+  $("#g-tabs").innerHTML=tabsHTML(G_TABS,gCat,"g","--g","--g-soft");
+  const cats = gCat==="all"?["board","ethics","risk"]:[gCat];
+  let h="";
+  cats.forEach(c=>{
+    const keys=Object.keys(M).filter(k=>M[k].p==="G"&&M[k].cat===c);
+    const docs=DOCS.filter(d=>d.cat===c);
+    h+=`<div class="sect"><h3>${CATNAME[c]}</h3><div class="grid4">${keys.map(k=>metricCard(k,"gm")).join("")}</div>`;
+    if(docs.length) h+=`<div class="card" style="padding:4px 20px">${docs.map(d=>`<div class="row"><div><b>${esc(d.t)}</b><div class="note">${esc(d.v)}</div></div><div style="display:flex;gap:12px;align-items:center"><span class="pill ${d.s}">${esc(d.st)}</span>${d.go?`<button class="link" data-go="${d.go}">ดูงาน →</button>`:`<button class="link">ดูไฟล์</button>`}</div></div>`).join("")}</div>`;
+    h+=`</div>`;
+  });
+  h+=`<div id="g-detail"></div>`;
+  h+=watchHTML(gCat==="all"?WATCH_G:(WATCH_G.filter(w=>w[2]===gCat).length?WATCH_G.filter(w=>w[2]===gCat):WATCH_G));
+  $("#g-body").innerHTML=h;
+  wireMetrics($("#g-body"),$("#g-detail"));
+}
+
+/* ---------- report ---------- */
+const CH = {
+  e:`<div class="row-between"><span class="lbl" style="letter-spacing:.06em">HEALL · SUSTAINABILITY INTELLIGENCE</span><span class="pill warn">รอตรวจสอบข้อมูล</span></div>
+     <p class="lbl" style="margin:14px 0 2px;color:var(--brand)">รายงานผลการดำเนินงานด้านสิ่งแวดล้อม · 2568</p><h2 style="font-size:24px;margin:0 0 14px">ภาพรวมก๊าซเรือนกระจกและพลังงาน</h2>
+     <p><b>การใช้พลังงานรวม 92,982.43 MWh โดยสูงสุดในเดือนพฤษภาคม</b></p>
+     <p>ในปี 2568 องค์กรมีการใช้พลังงานที่บันทึกและอนุมัติแล้วรวม 92,982.43 MWh สูงสุดในเดือนพฤษภาคม (8,688.71 MWh) ก๊าซเรือนกระจก Scope 1 อยู่ที่ 510.91 tCO₂e และ Scope 2 อยู่ที่ 46,288.99 tCO₂e</p>
+     <div class="kpis"><div><div class="lbl">การใช้พลังงานรวม</div><div class="mid">92,982.43 <small>MWh</small></div></div><div><div class="lbl">การปล่อย Scope 1</div><div class="mid">510.91 <small>tCO₂e</small></div></div><div><div class="lbl">การปล่อย Scope 2</div><div class="mid">46,288.99 <small>tCO₂e</small></div></div></div>
+     <p class="note">บทนี้คือบทเดิม ไม่มีการเปลี่ยนแปลง</p>`,
+  s:`<div class="row-between"><span class="lbl" style="letter-spacing:.06em">HEALL · SUSTAINABILITY INTELLIGENCE</span><span class="pill warn">รอตรวจสอบข้อมูล</span></div>
+     <p class="lbl" style="margin:14px 0 2px;color:var(--s)">รายงานความยั่งยืน · ครึ่งปีแรก 2569</p><h2 style="font-size:24px;margin:0 0 14px">ความรับผิดชอบต่อบุคลากรและผู้ป่วย</h2>
+     <div class="kpis" style="border-color:var(--s)"><div><div class="lbl">พนักงาน</div><div class="mid">4,820 <small>คน</small></div></div><div><div class="lbl">อัตราลาออกต่อปี</div><div class="mid">9.2 <small>%</small></div></div><div><div class="lbl">LTIFR</div><div class="mid">0.42</div></div></div>
+     <p><b>บุคลากร</b> ณ 30 มิถุนายน 2569 โรงพยาบาลมีพนักงาน <button class="num" data-k="staff">4,820 คน</button> ผู้หญิงดำรงตำแหน่งบริหาร <button class="num" data-k="women">46%</button> อัตราลาออกต่อปีอยู่ที่ <button class="num" data-k="turnover">9.2%</button> ลดลง 0.6 จุด กลุ่มพยาบาลอยู่ที่ <button class="num" data-k="nurse">11.2%</button> โดย ICU สูงที่สุด พนักงานได้รับการอบรมเฉลี่ย <button class="num" data-k="training">10.1 ชั่วโมงต่อคน</button> จากเป้าทั้งปี 24 ชั่วโมง</p>
+     <p><b>ความปลอดภัยของบุคลากร</b> มีอุบัติเหตุจากการทำงานถึงขั้นหยุดงาน <button class="num" data-k="injury">6 ครั้ง</button> รวม <button class="num" data-k="lostdays">41 วัน</button> และเหตุเข็มทิ่มตำ <button class="num" data-k="needle">7 ครั้ง</button> ซึ่งเพิ่มขึ้นจากช่วงก่อนหน้า</p>
+     <p><b>ผู้ป่วยและชุมชน</b> โรงพยาบาลได้รับข้อร้องเรียน <button class="num" data-k="complaint">31 เรื่อง</button> ปิดเรื่องแล้วร้อยละ 92 มีอุบัติการณ์ทางคลินิกรุนแรง <button class="num" data-k="incident">2 ครั้ง</button> และให้บริการผู้ป่วยสิทธิ์ภาครัฐ <button class="num" data-k="access">34%</button> ของการรักษาทั้งหมด</p>
+     <p class="note" style="border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px">ความพึงพอใจผู้ป่วย: ยังไม่มีข้อมูล ย่อหน้านี้จะเติมเองเมื่อแนบผลสำรวจ</p>`,
+  g:`<div class="row-between"><span class="lbl" style="letter-spacing:.06em">HEALL · SUSTAINABILITY INTELLIGENCE</span><span class="pill warn">รอตรวจสอบข้อมูล</span></div>
+     <p class="lbl" style="margin:14px 0 2px;color:var(--g)">รายงานความยั่งยืน · ปี 2569</p><h2 style="font-size:24px;margin:0 0 14px">การกำกับดูแลกิจการ</h2>
+     <p><b>คณะกรรมการ</b> คณะกรรมการบริษัทมี 11 คน เป็นกรรมการอิสระ <button class="num" data-k="board">4 คน</button> และกรรมการหญิง <button class="num" data-k="boardw">2 คน</button> ประชุม 8 ครั้งในปี อัตราเข้าประชุมเฉลี่ย <button class="num" data-k="attend">94%</button></p>
+     <p><b>จริยธรรมและการต่อต้านคอร์รัปชัน</b> พนักงานผ่านการอบรมต่อต้านคอร์รัปชัน <button class="num" data-k="abc">71%</button> บริษัทได้รับเรื่องแจ้งเบาะแส <button class="num" data-k="whistle">5 เรื่อง</button> ตรวจสอบเสร็จแล้ว 4 เรื่อง</p>
+     <p><b>ความเสี่ยงและการปฏิบัติตามกฎหมาย</b> ไม่มีเหตุข้อมูลส่วนบุคคลรั่วไหลที่ต้องแจ้งหน่วยงานกำกับ (<button class="num" data-k="breach">0 ครั้ง</button>) ไม่มีค่าปรับด้านกฎระเบียบ (<button class="num" data-k="fines">0 บาท</button>) โรงพยาบาลได้รับการรับรอง HA ถึง 31 มีนาคม 2570</p>
+     <p class="note" style="border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px">นโยบายต่อต้านคอร์รัปชันและผลประเมินความเสี่ยงด้าน ESG: ยังไม่ได้แนบ ส่วนนี้จะเติมเองเมื่อได้รับไฟล์</p>`
+};
+const EDETAIL=`<h3>ที่มาและวิธีคำนวณ</h3><div class="kv"><div><span>ประเภทเนื้อหา</span>ยอดรวมที่คำนวณแล้ว</div><div><span>พลังงาน</span>มีข้อมูล</div><div><span>วิธีคำนวณ</span>ดึงข้อมูลที่อนุมัติแล้วตามขอบเขต แล้วรวมผลคำนวณที่สำเร็จ</div></div>`;
+const CHAPS=[["esg","00 · ภาพรวม ESG","A",true],["e","01 · ก๊าซเรือนกระจกและพลังงาน","E",false],["s","02 · สังคม","S",true],["g","03 · ธรรมาภิบาล","G",true]];
+const ESGP={E:{r:56.7,f:"347/612 จุดวัด",h:["คาร์บอนรวม 16.2K tCO₂e ↓ 44%","พลังงาน 27.3M kWh ↓ 41.9%","ขยะ 470.8K kg ↓ 74.2%"]},
+  S:{r:91.7,f:"11/12 ตัวชี้วัด",h:['อัตราลาออก <button class="num" data-k="turnover">9.2%</button> ↓ 0.6 จุด','อุบัติเหตุหยุดงาน <button class="num" data-k="injury">6 ครั้ง</button>','ข้อร้องเรียน <button class="num" data-k="complaint">31 เรื่อง</button> ปิดแล้ว 92%']},
+  G:{r:85.7,f:"12/14 หัวข้อ",h:['กรรมการอิสระ <button class="num" data-k="board">36%</button>','อบรมต่อต้านทุจริต <button class="num" data-k="abc">71%</button>','ข้อมูลรั่วไหล <button class="num" data-k="breach">0 ครั้ง</button>']}};
+function esgChapter(){
+  const miss=[["E","40 จุดวัดไฟฟ้ายังไม่อนุมัติ","ฝ่ายวิศวกรรม"],["S","ผลสำรวจความพึงพอใจผู้ป่วย","ศูนย์คุณภาพ"],["G","นโยบายต่อต้านคอร์รัปชันฉบับลงนาม","ฝ่ายกฎหมาย"],["G","ผลประเมินความเสี่ยงด้าน ESG","ยังไม่มอบหมาย"]];
+  return `<div class="row-between"><span class="lbl" style="letter-spacing:.06em">HEALL · SUSTAINABILITY INTELLIGENCE</span><span class="pill warn">รอตรวจสอบข้อมูล</span></div>
+  <p class="lbl" style="margin:14px 0 2px">รายงานความยั่งยืน · ครึ่งปีแรก 2569</p><h2 style="font-size:24px;margin:0 0 14px">ภาพรวมผลการดำเนินงานด้าน ESG</h2>
+  <p>ครึ่งปีแรกของปี 2569 โรงพยาบาลปล่อยก๊าซเรือนกระจกรวม 16.2K tCO₂e ลดลง 44% อัตราลาออกของพนักงานลดลงเหลือ <button class="num" data-k="turnover">9.2%</button> และคณะกรรมการมีกรรมการอิสระ <button class="num" data-k="board">4 จาก 11 คน</button> ผ่านเกณฑ์ขั้นต่ำ</p>
+  <div class="esg3">${["E","S","G"].map(p=>`<div style="--c:var(${PVAR[p]})"><div class="ph">${pico(p)}<b>${PNAME[p]}</b></div><div class="mring" style="margin-top:10px">${ring(ESGP[p].r,PVAR[p],64,"ข้อมูลพร้อม")}<div><div class="lbl">ข้อมูลพร้อม</div><b>${ESGP[p].f}</b></div></div><ul>${ESGP[p].h.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+  <h3 style="margin:6px 0 4px">ข้อมูลที่ยังขาดก่อนส่งออก</h3>
+  <div class="tbl"><table><thead><tr><th>มิติ</th><th>รายการ</th><th>ผู้รับผิดชอบ</th></tr></thead><tbody>${miss.map(m=>`<tr><td><span class="ph">${pico(m[0],"sm")}${PNAME[m[0]]}</span></td><td>${m[1]}</td><td>${m[2]}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function esgDetail(){
+  return `<h3>ความพร้อมของรายงาน</h3><p class="note" style="margin:4px 0 12px">ส่งออกได้ทุกเมื่อ ส่วนที่ขาดจะขึ้นเป็นหมายเหตุในรายงาน</p>`+
+  ["E","S","G"].map(p=>`<div style="margin-bottom:14px"><div class="row-between"><span class="ph">${pico(p,"sm")}${PNAME[p]}</span><b>${ESGP[p].r}%</b></div><div class="track" style="margin-top:6px"><i style="width:${ESGP[p].r}%;background:var(${PVAR[p]})"></i></div><div class="note" style="margin-top:4px">${ESGP[p].f}</div></div>`).join("")+
+  `<p class="note">กดตัวเลขที่ขีดเส้นประเพื่อดูที่มา</p>`;
+}
+function renderChaps(){
+  $("#chaps").innerHTML=CHAPS.map(([k,n,p,nw])=>`<button class="chap" data-ch="${k}"><span class="ph">${pico(p,"sm")}${n}</span>${nw?'<span class="new">ใหม่</span>':""}</button>`).join("");
+}
+function showChapter(ch){
+  document.querySelectorAll(".chap").forEach(b=>b.setAttribute("aria-current",b.dataset.ch===ch?"true":"false"));
+  $("#doc").innerHTML = ch==="esg"?esgChapter():CH[ch];
+  $("#doc").style.borderTopColor = ch==="s"?"var(--s)":ch==="g"?"var(--g)":ch==="esg"?"var(--fg)":"var(--brand)";
+  if(ch==="e") $("#r-detail").innerHTML=EDETAIL;
+  else if(ch==="esg") $("#r-detail").innerHTML=esgDetail();
+  else showNum(ch==="s"?"turnover":"board");
+}
+function showNum(k){
+  document.querySelectorAll(".doc .num").forEach(n=>n.setAttribute("aria-pressed",n.dataset.k===k?"true":"false"));
+  $("#r-detail").innerHTML=detailHTML(k);
+}
+
+/* ---------- tasks ---------- */
+let TF="all";
+function renderTasks(){
+  const row=(t,i,up)=>{
+    const st = t.done?'<span class="pill ok">ส่งแล้ว รอตรวจ</span>':t.late?'<span class="pill bad">เกินกำหนด</span>':'<span class="pill neu">ต้องทำ</span>';
+    return `<div class="row"><div class="ph" style="align-items:flex-start">${pico(t.p,"sm")}<div style="min-width:0"><b>${esc(t.t)}</b><div class="note">${PNAME[t.p]} · ${esc(t.who)} · ครบ ${esc(t.due)}</div></div></div><div style="display:flex;gap:10px;align-items:center">${st}${up&&!t.done?`<label class="btn ghost" style="position:relative" for="tf-${i}">ส่งไฟล์<input type="file" id="tf-${i}" data-i="${i}"></label>`:""}</div></div>`;
+  };
+  const counts={all:T.length,E:0,S:0,G:0}; T.forEach(t=>counts[t.p]++);
+  $("#task-filter").innerHTML=[["all","ทั้งหมด"],["E","E"],["S","S"],["G","G"]].map(([f,n])=>`<button data-f="${f}" aria-pressed="${TF===f}">${f==="all"?pico("A","sm"):pico(f,"sm")}${n} ${counts[f]}</button>`).join("");
+  $("#task-list").innerHTML=T.map((t,i)=>(TF==="all"||t.p===TF)?row(t,i,true):"").join("");
+  $("#home-tasks").innerHTML=T.slice(0,4).map((t,i)=>row(t,i,false)).join("");
+  $("#todo-count").textContent=T.filter(t=>!t.done).length;
+  $("#task-list").querySelectorAll("input[type=file]").forEach(inp=>inp.addEventListener("change",()=>{if(!inp.files.length)return;T[+inp.dataset.i].done=true;renderTasks();}));
+}
+
+/* ---------- navigation ---------- */
+function setPillar(p){
+  document.querySelectorAll(".pillars button").forEach(b=>b.setAttribute("aria-selected",b.dataset.p===p?"true":"false"));
+  ["E","S","G"].forEach(x=>{$("#p-"+x).hidden=x!==p;});
+}
+const VIEWS=["home","dashboard","sources","report","portal","stub"];
+const TITLES={home:"หน้าแรก",dashboard:"แดชบอร์ด",sources:"แหล่งข้อมูล",report:"รายงาน",portal:"Staff Portal",stub:"แดชบอร์ด"};
+function go(v,label){
+  if(!VIEWS.includes(v)) v="dashboard";
+  VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;});
+  document.querySelectorAll("nav.side button").forEach(b=>{if(b.dataset.view===v&&(v!=="stub"||b.textContent===label))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+  $("#page-title").textContent = v==="stub"?(label||"หน้านี้"):TITLES[v];
+  if(v!=="stub"){try{history.replaceState(null,"","#"+v);}catch(e){}}
+  window.scrollTo(0,0);
+}
+document.addEventListener("click",e=>{
+  const nav=e.target.closest("nav.side [data-view]"); if(nav){go(nav.dataset.view,nav.textContent.trim());return;}
+  const g=e.target.closest("[data-go]"); if(g){go(g.dataset.go); if(g.dataset.pillar) setPillar(g.dataset.pillar); return;}
+  const p=e.target.closest(".pillars button"); if(p){setPillar(p.dataset.p);return;}
+  const st=e.target.closest("#s-tabs .tab"); if(st){sCat=st.dataset.cat;renderS();return;}
+  const gt=e.target.closest("#g-tabs .tab"); if(gt){gCat=gt.dataset.cat;renderG();return;}
+  const tf=e.target.closest("#task-filter button"); if(tf){TF=tf.dataset.f;renderTasks();return;}
+  const ch=e.target.closest(".chap"); if(ch){showChapter(ch.dataset.ch);return;}
+  const n=e.target.closest(".doc .num"); if(n){showNum(n.dataset.k);}
+});
+$("#save-def").addEventListener("click",()=>{$("#save-msg").textContent="บันทึกแล้ว ตัวเลขเดือนถัดไปจะคิดตามนี้";});
+$("#copy-cols").addEventListener("click",()=>{
+  const btn=$("#copy-cols");
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents($("#cols"));const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="เลือกข้อความแล้ว";};
+  try{navigator.clipboard.writeText($("#cols").textContent).then(()=>{btn.textContent="คัดลอกแล้ว";},fallback);}catch(e){fallback();}
+});
+$("#up-file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;$("#up-msg").innerHTML=`<span class="pill ok">รับไฟล์แล้ว</span> ${esc(f.name)} · ตรวจพบ 48 แถว ไม่มีข้อมูลรายบุคคล`;});
+
+barChart($("#chart-e"),MONTHS,[{color:"var(--sc2)",data:[2900,3020,2900,3330,850,200]},{color:"var(--sc3)",data:[480,520,500,560,160,90]}],[5180,4950,4980,4980,4600,4600],5800,[{v:0,l:"0"},{v:2600,l:"2.6K"},{v:5200,l:"5.2K"}]);
+document.querySelectorAll(".pillars button").forEach(b=>b.insertAdjacentHTML("afterbegin",pico(b.dataset.p,"sm")));
+document.querySelectorAll("[data-pico]").forEach(el=>{el.outerHTML=pico(el.dataset.pico,el.dataset.cls||"");});
+renderHome(); renderSources(); renderS(); renderG(); renderTasks(); renderChaps(); showChapter("esg"); setPillar("S");
+const h=(location.hash||"").slice(1);
+go(VIEWS.includes(h)&&h!=="stub"?h:"dashboard");
+</script>
+
+</body>
+</html>
